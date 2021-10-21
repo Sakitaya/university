@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>買い物かご</h1>
+<div>
+    注文商品<br>
+</div>
+        {% for beverages in all_beverages %}
+        <div>
+            ・{{beverages.title}}
+            :{{beverages.body}}
+        </div>
+        {% endfor %}
+<div>
+    <br>合計金額<br>
+            ・{{price}}円
+</div>
+<form action="/pay" method="post">
+  <input type="submit" value="決済に進む">
+    </form>
+</body>
+</html>
