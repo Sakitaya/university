@@ -4,17 +4,17 @@ import os
 import sqlalchemy
 from flask import render_template, request, redirect, url_for,  Blueprint
 from sqlalchemy.orm import scoped_session, sessionmaker
-from .session_change import beverage,order,user
+from app.session_change import beverage,order,user
 from models.models_Beverages import Beverages
 from models.models_Orders import Orders
 
 
 
-app1 = Blueprint('stock', __name__, template_folder='templates')
+app1 = Blueprint('stock', __name__, template_folder='../templates')
 
 @app1.route("/order", methods=["post"])
 def order():
-    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models/Orders.db')
+    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     all_beverages = session.query(Orders).all()
@@ -23,7 +23,7 @@ def order():
 
 @app1.route("/delete", methods=["post"])
 def delete():
-    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models/Orders.db')
+    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     all_beverages = session.query(Orders).all()
@@ -43,7 +43,7 @@ def add():
         title = content.title
         body = content.body
         price = content.price
-        databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models/Orders.db')
+        databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../models/Orders.db')
         engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
         session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
         oo = Orders(title, body, price)
@@ -55,7 +55,7 @@ def add():
 @app1.route("/set", methods=["post"])
 def set():
     price = 0
-    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models/Orders.db')
+    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     all_beverages = session.query(Orders).all()
