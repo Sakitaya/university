@@ -4,14 +4,13 @@ import os
 import sqlalchemy
 from flask import render_template, request, session, redirect, url_for,  Blueprint
 from sqlalchemy.orm import scoped_session, sessionmaker
-from models.models_User import User
+from library.models.models.models_User import User
 from hashlib import sha256
-from app.microservice_main.app import key
-
+from app.microservice_main.src import key
 
 app2 = Blueprint('user', __name__, template_folder='../templates')
 
-databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../models/User.db')
+databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../library/models/models/User.db')
 engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
 session2 = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 

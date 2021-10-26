@@ -6,9 +6,9 @@ import sqlalchemy
 from flask import render_template, session, url_for
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from models.models_Beverages import Beverages
-from models.models_Orders import Orders
-from app.microservice_main import key
+from library.models import Beverages
+from library.models import Orders
+from app.microservice_main.src import key
 from flask import Flask, redirect, request
 
 
@@ -22,7 +22,7 @@ app.register_blueprint(app1)
 from app.microservice_user.user import app2
 app.register_blueprint(app2)
 
-from app.microservice_main.payment import app3
+from app.microservice_main.src.payment import app3
 app.register_blueprint(app3)
 
 @app.route("/")
@@ -54,7 +54,7 @@ def top():
 
 @app.route("/clear", methods=['POST'])
 def clear():
-    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../models/Orders.db')
+    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     content = session.query(Orders).all()

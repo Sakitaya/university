@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from models.models_Beverages import Beverages
-from models.database import db_session
+from library.models import Beverages
+from library.models.models.database import db_session
 
 for id in id_list:
     content = Beverages.query.filter_by(id=id).first()
