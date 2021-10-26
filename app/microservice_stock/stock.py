@@ -75,4 +75,4 @@ def set():
             db_session.commit()
 
 if __name__ == "__main__":
-    app1.run(debug=True)
+    app1.run(debug=True, host='0.0.0.0', port=80)
