@@ -11,6 +11,7 @@ class Orders(Base):
 
 
     def __init__(self, title=None, body=None, price=None):
+        super().__init__(title=None, body=None, price=None)
         self.title = title
         self.body = body
         self.price = price
