@@ -14,7 +14,7 @@ app3 = Blueprint('payment', __name__, template_folder='../templates')
 @app3.route('/pay', methods=['POST'])
 def pay():
     price = 0
-    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Orders.db')
+    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../microservice_stock/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     all_beverages = session.query(Orders).all()

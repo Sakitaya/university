@@ -11,6 +11,9 @@
     <p>パスワードが間違っています。</p>
     {% elif status == "logout" %}
     <p>ログアウトが完了しました。</p>
+    {% elif status == "succes" %}
+    <p>ユーザ作成完了</p>
+
     {% endif %}
     <form action="/login" method="post">
         <input type="text" name="user_name" placeholder="user name">

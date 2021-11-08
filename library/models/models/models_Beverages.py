@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text
-from library.models.models.database import Base
+from sqlalchemy import Column, Integer, String, Text, DateTime
+from models.database import Base
+from datetime import datetime
 
 
 class Beverages(Base):

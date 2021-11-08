@@ -4,3 +4,7 @@ class Beverages:
 
 class Orders:
     pass
+
+
+class User:
+    pass
