@@ -29,12 +29,14 @@ class PastOrders(Base):
     title = Column(String(128), unique=False)
     status = Column(String(128))
     #date_before = Column(DateTime, default=datetime.now())
-    date_after = Column(String(128))
+    date_after = Column(Integer)
+    date_failed = Column(Integer)
 
-    def __init__(self, title=None, status=None, date_after=None):
+    def __init__(self, title=None, status=None, date_after=None, date_failed=None):
         self.title = title
         self.status = status
         self.date_after = date_after
+        self.date_failed = date_failed
 
     def __repr__(self):
         return '<Title %r>' % (self.title)

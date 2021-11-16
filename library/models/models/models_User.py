@@ -6,10 +6,10 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     user_name = Column(String(128), unique=True)
     hashed_password = Column(String(128))
-    point = Column(Text)
+    point = Column(Integer)
     used_point = Column(Integer)
 
-    def __init__(self, user_name=None, hashed_password=None, point=None, used_point=None):
+    def __init__(self, user_name=None, hashed_password=None, point=0, used_point=0):
         self.user_name = user_name
         self.hashed_password = hashed_password
         self.point = point
