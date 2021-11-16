@@ -13,7 +13,6 @@ class Orders(Base):
     date = Column(DateTime, default=datetime.now())
 
     def __init__(self, title=None, body=None, price=None, date=None):
-        super().__init__(title=None, body=None, price=None, date=None)
         self.title = title
         self.body = body
         self.price = price
