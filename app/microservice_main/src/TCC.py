@@ -1,24 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import json
 import os
 import random
+import time
 from datetime import datetime
 
 import numpy as np
-import requests
 import sqlalchemy
-from flask import Flask, redirect, request
-from flask import render_template, url_for
+import requests
+from flask import render_template, session, url_for
 from sqlalchemy.orm import scoped_session, sessionmaker
+from library.models.models.models_Beverages import Beverages
+from library.models.models.models_Orders import Orders, PastOrders
+from library.models.models.models_User import User
+from library.models.models.models_payment import Payment
+from app.microservice_main.src import key
+from flask import Flask, redirect, request
+import json
+import numpy
 
-
-from models.models_Beverages import Beverages
-from models.models_Orders import Orders, PastOrders
-from models.models_User import User
-from models.models_payment import Payment
 
 app = Flask(__name__, template_folder='../../templates')
+app.secret_key = key.SECRET_KEY
 databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../../library/models/models/Orders.db')
 engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -32,21 +35,34 @@ def auto():
     for i in range(100):
         clear()
         add()
-        set()
-        point = pay()
+        zaiko = set()
+        info_point = pay()
+        point = int(info_point["point"])
+        u_point = int(info_point["u_point"])
         set_2(point)
-        status = checkout()
+        status = checkout(zaiko)
         if status == "zaiko_failed":
-            failed()
+            print("")
+            #failed()
         elif status == "payment_failed":
-            failed()
+            print("")
+            #failed()
         else:
             print()
+            #success()
             #clear()
     return redirect(url_for("top", status="logout"))
 
+
+def success():
+    #url = 'http://192.168.3.7:5002/success'
+    url = 'http://192.168.100.131:5001/failed'
+    res_failed = requests.post(url=url)
+    return 0
+
 def reset():
     url = 'http://192.168.100.131:5002/reset'
+    #url = 'http://192.168.3.7:5002/reset'
     res_failed = requests.post(url=url)
     return 0
 
@@ -176,8 +192,7 @@ def pay():
     payload = {"point":point}
     res_pay = requests.post(url=url, json=json.dumps(payload))
     info_point = json.loads(res_pay.text)
-    points = int(info_point["point"])
-    return point
+    return info_point
     #return redirect(url_for("set_2", point=points))
 
 @app.route("/set2")
@@ -195,7 +210,7 @@ def set_2(point):
         name = beverages.title
     price = price - point
     print("送ります")
-    # url = 'http://192.168.3.7:5002/add'
+    #url = 'http://192.168.3.7:5002/payment'
     url = "http://192.168.100.131:5002/payment"
     payload = {"price": price}
     res_payment = requests.post(url=url, json=json.dumps(payload))
@@ -276,6 +291,7 @@ def set():
     res_set = requests.post(url=url)
     info_set = json.loads(res_set.text)
     price = int(info_set["price"])
+    zaiko = int(info_set["zaiko"])
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../../library/models/models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -290,33 +306,44 @@ def set():
     for i in content:
         if i.user_name in 'admin':
             u_point = i.point
-    return 0
+    return zaiko
     #return render_template("set.html", price=price, all_beverages=all_beverages, u_point=u_point)
 
 
 @app.route("/checkout", methods=['POST'])
-def checkout():
+def checkout(zaiko):
     global status
+    name = None
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Beverages.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session2 = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     content_Bverages = session2.query(Beverages).all()
     content_Orders = session3.query(Orders).all()
     for i in content_Orders:
-        #print(i.title)
+        name = i.title
         for j in content_Bverages:
-            #print(j.title)
             if i.title == j.title:
-                #print("商品名一致")
-                zaiko = int(j.zaiko)
-                if zaiko == 0:
-                    print("在庫なし")
+                if zaiko < 0:
                     status = "zaiko_failed"
                 else:
-                    print("在庫あり")
-                    #status = "Success"
+                    print("")
             else:
                 print("商品名非一致")
+    # for i in content_Orders:
+    #     #print(i.title)
+    #     for j in content_Bverages:
+    #         #print(j.title)
+    #         if i.title == j.title:
+    #             #print("商品名一致")
+    #             zaiko = int(j.zaiko)
+    #             if zaiko == 0:
+    #                 print("在庫なし")
+    #                 status = "zaiko_failed"
+    #             else:
+    #                 print("在庫あり")
+    #                 #status = "Success"
+    #         else:
+    #             print("商品名非一致")
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Payment.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
@@ -332,10 +359,7 @@ def checkout():
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     content = session.query(Orders).all()
     if status == "zaiko_failed":
-        failed()
-    elif status == "payment_failed":
-        failed()
-    else:
+        print("")
         for i in content:
             datetime_before = i.date
             date = datetime.now() - datetime_before
@@ -343,6 +367,17 @@ def checkout():
             oo = PastOrders(title=title, status=status, date_after=date.total_seconds())
             session.add(oo)
             session.commit()
+    elif status == "payment_failed":
+        print("")
+        for i in content:
+            datetime_before = i.date
+            date = datetime.now() - datetime_before
+            title = i.title
+            oo = PastOrders(title=title, status=status, date_after=date.total_seconds())
+            session.add(oo)
+            session.commit()
+    else:
+        success()
         # session.delete(i)
         # session.commit()
     return status

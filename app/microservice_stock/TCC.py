@@ -63,6 +63,7 @@ def add():
 
 @app1.route("/set", methods=["post"])
 def set():
+    zaiko = 0
     price = 0
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../library/models/models/Orders.db')
@@ -73,11 +74,18 @@ def set():
         order = int(beverages.price)
         price = price + order
         name = beverages.title
-        count_zaiko(name)
-    return json.dumps({"price": price})
+        zaiko = count_zaiko(name)
+        with open(".zaiko.csv", "w", encoding='utf-8') as file:
+            file.write(str(zaiko))
+    return json.dumps({"price": price, "zaiko": zaiko})
+
+
+
+
 
 
 def count_zaiko(name):
+    zaiko = 0
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../library/models/models/Beverages.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -87,11 +95,11 @@ def count_zaiko(name):
         if name == beverages.title:
             zaiko = int(beverages.zaiko)
             zaiko = zaiko - 1
-            beverages.zaiko = zaiko
+            #beverages.zaiko = zaiko
             if int(beverages.zaiko) < 0:
                 beverages.zaiko = 0
-            session.commit()
-    return 0
+            #session.commit()
+    return zaiko
 
 
 @app1.route("/set2")
@@ -118,19 +126,21 @@ def pay():
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     all_user = session.query(User).all()
     for user in all_user:
-        u_point = int(user.point)
-        # if u_point <= 0:
-        #     points = 0
-        #     #return redirect(url_for("stock.set_2", point=points))
-        # if u_point < points:
-        #     points = 0
-        #     return redirect(url_for("stock.set_2", point=points))
-        u_point_int = u_point - points
-        user.point = u_point_int
-        user.used_point = points
-        session.commit()
-        name = user.user_name
-        return json.dumps({"point": points})
+        with open(".user_point.csv", "w", encoding='utf-8') as file:
+            u_point = int(user.point)
+            # if u_point <= 0:
+            #     points = 0
+            #     #return redirect(url_for("stock.set_2", point=points))
+            # if u_point < points:
+            #     points = 0
+            #     return redirect(url_for("stock.set_2", point=points))
+            u_point_int = u_point - points
+            #user.point = u_point_int
+            #user.used_point = points
+            #session.commit()
+            #name = user.user_name
+            file.write(str(u_point_int))
+            return json.dumps({"point": points, "u_point": u_point_int})
         #return redirect(url_for("stock.set_2", point=points))
 
 
