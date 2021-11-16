@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Pizza order.net</title>
+        <title>beverages order.net</title>
     </head>
      <a href="/logout">ログアウトする</a>
     <body>
-    <h1>Pizza orderシステム</h1>
-    <form action="/add" method="post">
-        <!input type="text" name="title" placeholder="title">
-        <!input type="text" name="body" placeholder="body">
-        <input type="submit" value="注文">
-    </form>
-    <form action="/order" method="post">
-        <input type="submit" value="買い物かごを見る">
-    </form>
-    <form action="/add" method="post" id="add">
-        <input type="submit" value="買い物かごに追加する">
-    </form>
+    <h1>メニュー表</h1>
         {% for beverages in all_beverages %}
         <div>
             <input type="checkbox" name="add" form="add" value={{beverages.id}}>
             {{beverages.title}}：{{beverages.body}}
         </div>
         {% endfor %}
+    <form action="/set" method="post">
+        <input type="submit" value="注文する">
+    </form>
+    <form action="/add" method="post" id="add">
+        <input type="image" src="templates/images/app.jpg" value="買い物かごに追加する">
+    </form>
     </body>
 </html>

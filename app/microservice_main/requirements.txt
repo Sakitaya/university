@@ -1,0 +1,5 @@
+flask
+sqlalchemy
+requests
+numpy
+-e git+https://git@github.com/akitaya0519/micro-service.git@docker#egg=models&subdirectory=library/models
