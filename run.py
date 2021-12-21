@@ -1,5 +1,5 @@
 from app.microservice_main.src.main import app
-from app.microservice_payment.payment import app3
+from app.microservice_payment.src.payment import app3
 from app.microservice_stock.stock import app1
 from app.microservice_user.user import app2
 

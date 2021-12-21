@@ -120,7 +120,7 @@ def set_2():
 @app1.route("/pay", methods=["post"])
 def pay():
     data = json.loads(request.json)
-    points = data["point"]
+    points = int(data["point"])
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../library/models/models/User.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
@@ -190,4 +190,4 @@ def reset():
 
 
 if __name__ == "__main__":
-    app1.run(debug=False, host='0.0.0.0', port=5000)
+    app1.run(debug=False, host='0.0.0.0', port=5009)

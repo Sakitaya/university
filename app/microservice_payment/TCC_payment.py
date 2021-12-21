@@ -31,11 +31,12 @@ def payment():
     for pay in all_pay:
         data = json.loads(request.json)
         price = data["price"]
-        #limit = pay.limit
-        limit = np.random.choice(["0", "1"], p=[0.3, 0.7])
+        limit = int(data["limit"])
+        # limit = pay.limit
+        # limit = np.random.choice(["0", "1"], p=[0.1, 0.9])
         #limit = limit - price
-        # if limit <= 0:
-        #     limit = 0
+        # if limit == 0:
+        #     limit = 10000
         pay.limit = limit
         oo = Used(used=price)
         session.add(oo)
@@ -51,7 +52,7 @@ def reset():
     all_pay = session.query(Payment).all()
     for pay in all_pay:
         pay.limit = 5000
-    url = 'http://192.168.100.131:5001/reset'
+    url = 'http://192.168.100.63:5001/reset'
     res_failed = requests.post(url=url)
     session.commit()
     return json.dumps({"status": "Success"})
@@ -62,6 +63,8 @@ def reset():
 
 @app3.route("/success", methods=["post"])
 def success():
+    url = 'http://192.168.100.63:5004/saga_success'
+    requests.post(url=url)
     name = None
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../library/models/models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -95,17 +98,17 @@ def success():
             user.point = u_point_int
             # user.used_point = point
             session4.commit()
-    for i in content:
+    for i in content_Orders:
         datetime_before = i.date
         date = datetime.now() - datetime_before
         title = i.title
-        status = "Success"
+        status = "2"
         oo = PastOrders(title=title, status=status, date_after=date.total_seconds())
         session3.add(oo)
         session3.commit()
-    return json.dumps({"status": "Success"})
+    return json.dumps({"status": "103"})
 
 
 
 if __name__ == "__main__":
-    app3.run(debug=True, host='0.0.0.0', port=5002)
+    app3.run(debug=True, host='0.0.0.0', port=5006)

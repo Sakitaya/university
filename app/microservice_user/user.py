@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime
 
+import numpy as np
 import sqlalchemy
 from flask import render_template, request, session, redirect, url_for, Blueprint, Flask, jsonify
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -37,7 +38,7 @@ def login():
         hashed_password = sha256((user_name + data["password"] + key.SALT).encode("utf-8")).hexdigest()
         if user.hashed_password == hashed_password:
             #session["user_name"] = user_name
-            return json.dumps({"status": "login"})
+            return json.dumps({"status": "login", "user_name": user_name})
             #return redirect(url_for("index"))
         else:
             return json.dumps({"messege" "worng_password"})
@@ -74,14 +75,26 @@ def registar():
 def failed():
     all_user = session2.query(User).all()
     for user in all_user:
-        print("%s入りました。", user)
-        used_point = user.used_point
-        user_point = user.point
-        point:int = user_point + used_point
-        user.point = point
-        #user.used_point = 0
-        session2.commit()
-    #url = 'http://192.168.3.7:5000/failed'
+        if user.user_name == 'admin':
+            print("%s入りました。", user)
+            used_point = user.used_point
+            user_point = user.point
+            point: int = user_point + used_point
+            user.point = point
+            user.cancel_count = np.random.randint(0, 1000)
+            #user.used_point = 0
+            session2.commit()
+        elif user.user_name == 'akitaya':
+            print("%s入りました。", user)
+            used_point = user.used_point
+            user_point = user.point
+            point: int = user_point + used_point
+            user.point = point
+            #user.cancel_count = user.cancel_count + 1
+            user.cancel_count = np.random.randint(0, 1000)
+            #user.used_point = 0
+            session2.commit()
+    #url = 'http://192.168.100.63:5001/failed'
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../library/models/models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session3 = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
@@ -93,6 +106,8 @@ def failed():
 
 
 def failed_zaiko(name):
+    url = 'http://192.168.100.63:5004/saga_failed'
+    res = requests.post(url=url)
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../library/models/models/Beverages.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -112,7 +127,8 @@ def failed_zaiko(name):
         print("入りました")
         datetime_before = i.date
         date_failed = datetime.now() - datetime_before
-        oo = PastOrders(date_failed=date_failed.total_seconds())
+        status = "101"
+        oo = PastOrders(status=status, date_failed=date_failed.total_seconds())
         session3.add(oo)
         session3.commit()
     return 0

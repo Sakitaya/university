@@ -14,13 +14,13 @@ ENV TERM xterm
 
 RUN mkdir -p /root/src
 COPY requirements.txt /root/src
-COPY src/main.py /root/src
+COPY src/payment.py /root/src
 WORKDIR /root/src
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 RUN pip install -r requirements.txt
 RUN pip freeze
-EXPOSE 80
+EXPOSE 5002
 #CMD ["pip", "show","models"]
-CMD ["python", "/root/src/main.py"]
+CMD ["python", "/root/src/payment.py"]

@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+#001=Saga_Success
+# 002 = Saga_failed
+# 003 = TCC_Success
+# 004 = TCC_failed
 import os
 import random
 import time
@@ -21,7 +25,6 @@ import numpy
 
 
 app = Flask(__name__, template_folder='../../templates')
-app.secret_key = key.SECRET_KEY
 databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../../library/models/models/Orders.db')
 engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -29,40 +32,46 @@ session3 = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=e
 status = None
 
 @app.route("/")
-def auto():
+def au():
+    data = json.loads(request.json)
+    point = int(data["point"])
+    id_list = data["id_list"]
+    limit = int(data["limit"])
+    user_cancel = int(data["user_cancel"])
+    uketori_kyohi = int(data["uketori_kyohi"])
     global status
-    reset()
-    for i in range(100):
-        clear()
-        add()
-        zaiko = set()
-        info_point = pay()
-        point = int(info_point["point"])
-        u_point = int(info_point["u_point"])
-        set_2(point)
-        status = checkout(zaiko)
-        if status == "zaiko_failed":
-            print("")
-            #failed()
-        elif status == "payment_failed":
-            print("")
-            #failed()
-        else:
-            print()
-            #success()
-            #clear()
-    return redirect(url_for("top", status="logout"))
+    # reset()
+    clear()
+    add(id_list)
+    set()
+    pay(point)
+    if point == 0:
+        set_2(point, limit)
+        status = checkout(user_cancel, uketori_kyohi)
+        return json.dumps({"status": "roll backed"})
+    else:
+        set_2(point, limit)
+        status = checkout(user_cancel, uketori_kyohi)
+    score(status)
+    return json.dumps({"status": "roll backed"})
 
+
+
+
+
+def score(status):
+    url = 'http://192.168.100.63:5004/score'
+    requests.get(url=url, json=json.dumps(status))
 
 def success():
-    #url = 'http://192.168.3.7:5002/success'
-    url = 'http://192.168.100.131:5001/failed'
+    #url = 'http://192.168.100.63:5005/success'
+    url = 'http://192.168.100.63:5006/success'
     res_failed = requests.post(url=url)
-    return 0
+    return "2"
 
 def reset():
-    url = 'http://192.168.100.131:5002/reset'
-    #url = 'http://192.168.3.7:5002/reset'
+    url = 'http://192.168.100.63:5006/reset'
+    #url = 'http://192.168.100.63:5006/reset'
     res_failed = requests.post(url=url)
     return 0
 
@@ -86,14 +95,14 @@ def index():
     #     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     #     session1 = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=engine))
     #     all_beverages = session1.query(Beverages).all()
-    #     #res = requests.post('192.168.100.131:5000/order', name=name, all_beverages=all_beverages)
+    #     #res = requests.post('192.168.100.63:5000/order', name=name, all_beverages=all_beverages)
     #     return render_template("index.html", name=name, all_beverages=all_beverages)
     # else:
     #     # databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),'../../../library/models/models/Beverages.db')
     #     # engine = sqlalchemy.create_engine('sqlite:///' + databese_file)
     #     # session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     #     # all_beverages = session.query(Beverages).all()
-    #     #res = requests.post('192.168.100.131:5000/order', name=name, all_beverages=all_beverages)
+    #     #res = requests.post('192.168.100.63:5000/order', name=name, all_beverages=all_beverages)
     #     #return render_template("index.html", name=user_name, all_beverages=all_beverages)
     if status is not None:
         if "logout" in status:
@@ -117,37 +126,13 @@ def index():
         return render_template("index.html", all_beverages=all_beverages)
 
 
-#@app.route("/")
-#@app.route("/index")
-#def index():
-    #session = user()
-    #name = "admin"
-    #session = beverage()
-    #all_beverages = session.query(Beverages).all()
-    #payload = {"name":name,"all_beverages":str(all_beverages)}
-    # payload = {
-    #     "name":name,
-    #     "all_a":{
-    #         "a":1,
-    #         "b":2,
-    #         "c":3
-    #     },
-    #     "list":[
-    #         "a",
-    #         "aaa",
-    #         "abc"
-    #     ]
-    # }
-    #url = "http://192.168.100.131:5000/order"
-    #res = requests.post(url, json=json.dumps(payload))
-    #resjson = json.loads(res.text)
-    #return render_template("index.html", name=name, all_beverages=all_beverages)
+
 
 @app.route("/login", methods=["post"])
 def login():
     global status
-    url = 'http://192.168.100.131:5001/login'
-    #url = 'http://192.168.3.7:5001/login'
+    url = 'http://192.168.100.63:5007/login'
+    #url = 'http://192.168.100.63:5007/login'
     user_name = request.form["user_name"]
     password = request.form["password"]
     #user_name = "admin"
@@ -167,8 +152,8 @@ def newcomer():
 @app.route("/registar", methods=["post"])
 def registar():
     global status
-    url = "http://192.168.100.131:5001/registar"
-    #url = 'http://192.168.3.7:5001/registar'
+    url = "http://192.168.100.63:5001/registar"
+    #url = 'http://192.168.100.63:5001/registar'
     user_name = str(request.form["user_name"])
     password = str(request.form["password"])
     payload = {"name": user_name, "password": password}
@@ -183,36 +168,37 @@ def post():
     return redirect(url_for("index", status="login"))
 
 @app.route("/pay", methods=["post"])
-def pay():
+def pay(point):
     global status
-    #url = 'http://192.168.3.7:5000/pay'
-    url = 'http://192.168.100.131:5000/pay'
+    #url = 'http://192.168.100.63:5009/pay'
+    url = 'http://192.168.100.63:5009/pay'
     #points = int(request.form["point"])
-    point = random.randint(10, 100)
-    payload = {"point":point}
+    # point = random.randint(0, 1)
+    payload = {"point": point}
     res_pay = requests.post(url=url, json=json.dumps(payload))
     info_point = json.loads(res_pay.text)
     return info_point
     #return redirect(url_for("set_2", point=points))
 
+price = 0
 @app.route("/set2")
-def set_2(point):
-    global status
-    #point = int(request.args.get("point"))
-    databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Orders.db')
-    engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
-    session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
-    all_beverages = session.query(Orders).all()
-    for beverages in all_beverages:
-        price = 0
-        order = int(beverages.price)
-        price = price + order
-        name = beverages.title
-    price = price - point
-    print("送ります")
-    #url = 'http://192.168.3.7:5002/payment'
-    url = "http://192.168.100.131:5002/payment"
-    payload = {"price": price}
+def set_2(point, limit):
+    global status, price
+    if point != 0:
+        #point = int(request.args.get("point"))
+        databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Orders.db')
+        engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
+        session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+        all_beverages = session.query(Orders).all()
+        for beverages in all_beverages:
+            price = 0
+            order = int(beverages.price)
+            price = price + order
+        price = price - point
+        print("送ります")
+    #url = 'http://192.168.100.63:5006/payment'
+    url = "http://192.168.100.63:5006/payment"
+    payload = {"price": price, "limit": limit}
     res_payment = requests.post(url=url, json=json.dumps(payload))
     info_payment = json.loads(res_payment.text)
     status = info_payment["status"]
@@ -236,12 +222,11 @@ def logout():
     return redirect(url_for("top", status="logout"))
 
 @app.route("/add", methods=["post"])
-def add():
+def add(id_list):
     global status
-    id_list = np.random.choice(["1", "2", "3"], p=[0.5, 0.45, 0.05])
     #id_list = request.form.getlist("add")
-    #url = 'http://192.168.3.7:5000/add'
-    url = "http://192.168.100.131:5000/add"
+    #url = 'http://192.168.100.63:5009/add'
+    url = "http://192.168.100.63:5009/add"
     for id in id_list:
         databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                      '../../../library/models/models/Beverages.db')
@@ -275,8 +260,8 @@ def order():
 @app.route("/delete", methods=["post"])
 def delete():
     global status
-    #url = 'http://192.168.3.7:5000/delete'
-    url = 'http://192.168.100.131:5000/delete'
+    #url = 'http://192.168.100.63:5000/delete'
+    url = 'http://192.168.100.63:5000/delete'
     id_list = request.form.getlist("delete")
     payload = {"id_list": id_list}
     res_user = requests.post(url=url, json=json.dumps(payload))
@@ -285,13 +270,16 @@ def delete():
 @app.route("/set", methods=["post"])
 def set():
     global status
-    #url = 'http://192.168.3.7:5000/set'
-    url = 'http://192.168.100.131:5000/set'
+    #url = 'http://192.168.100.63:5009/set'
+    url = 'http://192.168.100.63:5009/set'
     payload = {"name": "data"}
     res_set = requests.post(url=url)
     info_set = json.loads(res_set.text)
     price = int(info_set["price"])
     zaiko = int(info_set["zaiko"])
+    # url = 'http://192.168.100.63:5004/zai'
+    # payload = {"zaiko": zaiko}
+    # requests.post(url=url, json=json.dumps(payload))
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                  '../../../library/models/models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
@@ -306,12 +294,14 @@ def set():
     for i in content:
         if i.user_name in 'admin':
             u_point = i.point
+        elif i.user_name in 'akitaya':
+            u_point = i.point
     return zaiko
     #return render_template("set.html", price=price, all_beverages=all_beverages, u_point=u_point)
 
 
 @app.route("/checkout", methods=['POST'])
-def checkout(zaiko):
+def checkout(user_cancel, uketori_kyohi):
     global status
     name = None
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../../library/models/models/Beverages.db')
@@ -323,7 +313,8 @@ def checkout(zaiko):
         name = i.title
         for j in content_Bverages:
             if i.title == j.title:
-                if zaiko < 0:
+                zaiko = int(j.zaiko)
+                if zaiko <= 0:
                     status = "zaiko_failed"
                 else:
                     print("")
@@ -359,6 +350,9 @@ def checkout(zaiko):
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     content = session.query(Orders).all()
     if status == "zaiko_failed":
+        url = 'http://192.168.100.63:5004/saga_failed'
+        res = requests.post(url=url)
+        status = "102"
         print("")
         for i in content:
             datetime_before = i.date
@@ -368,7 +362,10 @@ def checkout(zaiko):
             session.add(oo)
             session.commit()
     elif status == "payment_failed":
+        url = 'http://192.168.100.63:5004/saga_failed'
+        res = requests.post(url=url)
         print("")
+        status = "103"
         for i in content:
             datetime_before = i.date
             date = datetime.now() - datetime_before
@@ -377,9 +374,33 @@ def checkout(zaiko):
             session.add(oo)
             session.commit()
     else:
-        success()
+        status = success()
         # session.delete(i)
         # session.commit()
+    if user_cancel == 1:
+        url = 'http://192.168.100.63:5004/saga_failed'
+        res = requests.post(url=url)
+        print("")
+        status = "104"
+        for i in content:
+            datetime_before = i.date
+            date = datetime.now() - datetime_before
+            title = i.title
+            oo = PastOrders(title=title, status=status, date_after=date.total_seconds())
+            session.add(oo)
+            session.commit()
+    if uketori_kyohi == 1:
+        url = 'http://192.168.100.63:5004/saga_failed'
+        res = requests.post(url=url)
+        print("")
+        status = "105"
+        for i in content:
+            datetime_before = i.date
+            date = datetime.now() - datetime_before
+            title = i.title
+            oo = PastOrders(title=title, status=status, date_after=date.total_seconds())
+            session.add(oo)
+            session.commit()
     return status
     #return redirect(url_for("top", status=status))
 
@@ -397,11 +418,11 @@ def clear():
 
 @app.route("/failed")
 def failed():
-    #url = 'http://192.168.3.7:5001/failed'
-    url = 'http://192.168.100.131:5001/failed'
+    #url = 'http://192.168.100.63:5001/failed'
+    url = 'http://192.168.100.63:5001/failed'
     res_failed = requests.post(url=url)
     return 0
     #return render_template("top.html", status="roll backed")
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=80)
+    app.run(debug=True, host='0.0.0.0', port=81)

@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime
 
+import numpy as np
 import sqlalchemy
 from flask import render_template, request, session, redirect, url_for, Blueprint, Flask, jsonify
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -74,14 +75,25 @@ def registar():
 def failed():
     all_user = session2.query(User).all()
     for user in all_user:
-        print("%s入りました。", user)
-        used_point = user.used_point
-        user_point = user.point
-        point:int = user_point + used_point
-        user.point = point
-        #user.used_point = 0
-        session2.commit()
-    #url = 'http://192.168.3.7:5000/failed'
+        if user.user_name == 'admin':
+            print("%s入りました。", user)
+            used_point = user.used_point
+            user_point = user.point
+            point: int = user_point + used_point
+            user.point = point
+            user.cancel_count = np.random.randint(0, 1000)
+            #user.used_point = 0
+            session2.commit()
+        elif user.user_name == 'akitaya':
+            print("%s入りました。", user)
+            used_point = user.used_point
+            user_point = user.point
+            point: int = user_point + used_point
+            user.point = point
+            user.cancel_count = np.random.randint(0, 1000)
+            #user.used_point = 0
+            session2.commit()
+    #url = 'http://192.168.100.63:5000/failed'
     databese_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../library/models/models/Orders.db')
     engine = sqlalchemy.create_engine('sqlite:///' + databese_file, convert_unicode=True)
     session3 = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
@@ -125,4 +137,4 @@ def failed_zaiko(name):
     # return json.dumps({"status": "roll backed"})
 
 if __name__ == "__main__":
-    app2.run(debug=True, host='0.0.0.0', port=5001)
+    app2.run(debug=True, host='0.0.0.0', port=5007)
